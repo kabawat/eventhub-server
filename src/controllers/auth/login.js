@@ -7,9 +7,7 @@ const { userModel } = require("#src/models");
 
 async function LoginController(req, res) {
     const { loginIdentifier, password } = req.body;
-    console.log("herer : ", req.body)
     try {
-        // Check if loginIdentifier and password are provided
         if (!loginIdentifier || !password) {
             return res.status(STATUS_CODES?.BAD_REQUEST).json({
                 message: "Username/Email and password are required",
@@ -17,10 +15,8 @@ async function LoginController(req, res) {
             });
         }
 
-        // Check if the input is an email or username
         let user;
         if (validateEmail(loginIdentifier)) {
-            // If it's an email, isVerified user by email
             user = await userModel.findOne({ email: loginIdentifier, isVerified: true }, "email username password");
         } else {
             user = await userModel.findOne({ username: loginIdentifier, isVerified: true }, "email username password");
@@ -29,8 +25,6 @@ async function LoginController(req, res) {
         if (!user) {
             return res.status(STATUS_CODES?.NOT_FOUND).json({ message: "User not found", status: false });
         }
-
-        // Compare the entered password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(STATUS_CODES?.BAD_REQUEST).json({ message: "Invalid credentials", status: false });

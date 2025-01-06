@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { Errors, STATUS_CODES } = require("#src/utils/constants/staticData");
 const { userModel } = require("#src/models");
+const { validateEmail } = require("#src/utils/helper/validation");
 
 async function LoginController(req, res) {
     const { loginIdentifier, password } = req.body;
@@ -15,13 +16,17 @@ async function LoginController(req, res) {
             });
         }
 
-        let user = await userModel.findOne({ username: loginIdentifier, isVerified: true, isStaff: true }, "email username password");
+        let user;
+        if (validateEmail(loginIdentifier)) {
+            user = await userModel.findOne({ email: loginIdentifier, isStaff: true, isVerified: true }, "email username password");
+        } else {
+            user = await userModel.findOne({ username: loginIdentifier, isStaff: true, isVerified: true }, "email username password");
+        }
 
         if (!user) {
             return res.status(STATUS_CODES?.NOT_FOUND).json({ message: "User not found", status: false });
         }
 
-        // Compare the entered password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(STATUS_CODES?.BAD_REQUEST).json({ message: "Invalid credentials", status: false });
