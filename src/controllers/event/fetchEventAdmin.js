@@ -20,7 +20,7 @@ async function fetchEventAdmin(req, res) {
             email: userObj.user.email,
             fullname: userObj.user.fullname
         }));
-        const eventDetails = await eventModel.findById(eventId).select('totalAttendance description location title date').lean();
+        const eventDetails = await eventModel.findById(eventId).select('totalAttendance description location title date isActive').lean();
 
         if (eventDetails) {
             return res.status(STATUS_CODES?.SUCCESS).json({
